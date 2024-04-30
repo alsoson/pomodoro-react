@@ -1,8 +1,13 @@
 import { useState,useEffect } from "react";
 import { v4 } from "uuid";
-import { TrashIcon } from '@heroicons/react/24/outline'
+import { TrashIcon, PencilIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Dialog } from '@headlessui/react'
 
 const Time = () => {
+  const [isOpen, setIsOpen] = useState(false)
+  const [dialogNote, setDialogNote] = useState('')
+  const [dialogMark, setDialogMark] = useState('')
+
   const [note, setNote] = useState("");
   function noteChange(e) {
     setNote(e.target.value);
@@ -37,6 +42,17 @@ const Time = () => {
     } else {
       alert('超過10項囉!')
     }
+  }
+  function deleteItem(id){
+    const arr= todoData.filter((item) => item.id !== id)
+    console.log(arr)
+    saveLocalStorage(arr)
+    setTodoData(arr);
+  } 
+  function editItem(id,item){
+    setIsOpen(true)
+    // setDialogNote(item.note)
+    // setDialogMark(item.mark)
   }
 
   
@@ -87,29 +103,76 @@ const Time = () => {
               新增事項
             </button>
           </div>
-          <div className=" mt-5 hidden lg:flex flex justify-center" >
+          <div className=" mt-5 hidden lg:flex md:flex flex justify-center" >
             <table className="">
               
               <tbody>
               {todoData?todoData.map((item)=>{
 
-                return <tr key={item.id}>
+                return <tr key={item.id} className="my-5">
                   <td>{item.note}{item.mark?'('+item.mark+')':''}</td>
                   <td>
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold rounded px-3">
-                        <TrashIcon className="h-7 w-7" />
-                    </button>
+                    <div>
+                      <button onClick={() => deleteItem(item.id)} className="rounded-full bg-blue-500 hover:bg-blue-700 text-white p-2 font-bold rounded">
+                        <TrashIcon className="h-7 w-7 rounded" />
+                      </button>
+                      <button onClick={() => editItem(item.id,item)} className="rounded-full bg-blue-500 hover:bg-blue-700 text-white p-2 font-bold rounded mx-1">
+                        <PencilIcon className="h-7 w-7 rounded" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               }):null}
               </tbody>
             </table>
           </div>
+          <div className=" mt-5 lg:hidden md:hidden  w-full grid grid-cols-12" >
+            
+            {todoData?todoData.map((item)=>{
+              return (<div className="card flex justify-between mx-3 my-2 py-1 bg-gray-400 rounded-md max-sm:col-span-12 max-md:col-span-6 max-lg:col-span-4" key={item.id}>
+                <div className="flex pl-5">
+                  <h1 className="py-2">{item.note}</h1>
+                  <h2 className="py-2">{item.mark?'('+item.mark+')':''}</h2>
+                </div>
+                <div>
+                  <button onClick={() => deleteItem(item.id)} className="rounded-full bg-blue-500 hover:bg-blue-700 text-white p-2 font-bold rounded">
+                    <TrashIcon className="h-7 w-7 rounded" />
+                  </button>
+                  <button onClick={() => editItem(item.id)} className="rounded-full bg-blue-500 hover:bg-blue-700 text-white p-2 font-bold rounded mx-1">
+                    <PencilIcon className="h-7 w-7 rounded" />
+                  </button>
+                </div>
+              </div>)
+              }):null}
+            
+          </div>
           
 
 
         </div>
       </div>
+
+      {/* headlessui */}
+      <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="bg-gray-400 z-50 fixed top-0 left-0 w-full h-full">
+      <Dialog.Panel>
+          <div className="text-right">
+            {/* <button onClick={() => setIsOpen(false)}>Deactivate</button> */}
+            <button onClick={() => setIsOpen(false)}>
+              <XMarkIcon className="w-10 h-10"/>
+            </button>
+          </div>
+          <Dialog.Title>Deactivate account</Dialog.Title>
+          <Dialog.Description>
+            This will permanently deactivate your account
+          </Dialog.Description>
+
+          <p>
+            Are you sure you want to deactivate your account? All of your data
+            will be permanently removed. This action cannot be undone.
+          </p>
+
+      </Dialog.Panel>
+    </Dialog>
     </div>
   );
 }
