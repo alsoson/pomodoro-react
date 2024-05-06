@@ -1,9 +1,13 @@
-import { useState,useEffect } from "react";
+import { useState,useEffect, useRef, Fragment  } from "react";
 import { v4 } from "uuid";
-import { TrashIcon, PencilIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { Dialog } from '@headlessui/react'
+import { TrashIcon, PencilIcon, XMarkIcon, ExclamationTriangleIcon  } from '@heroicons/react/24/outline'
+import { Dialog, Transition  } from '@headlessui/react'
+import NoteEditDialog from './NoteEditDialog';
 
-const Time = () => {
+
+const Note = () => {
+  const editOrginalIndex = useRef('')
+  const cancelButtonRef = useRef(null)
   const [isOpen, setIsOpen] = useState(false)
   const [dialogNote, setDialogNote] = useState('')
   const [dialogMark, setDialogMark] = useState('')
@@ -32,15 +36,19 @@ const Time = () => {
     return localStorage.getItem(key)?JSON.parse(localStorage.getItem(key)):""
   }
   function addItem(){
-    if (todoData.length < 10) {
-      const newData = [...todoData, { id: v4(), note, mark }];
-      console.log(newData)
-      saveLocalStorage(newData);
-      setTodoData(newData);
-      setNote("");
-      setRmark("");
-    } else {
-      alert('超過10項囉!')
+    if(note&& note.length>0){
+      if (todoData.length < 10) {
+        const newData = [...todoData, { id: v4(), note, mark }];
+        console.log(newData)
+        saveLocalStorage(newData);
+        setTodoData(newData);
+        setNote("");
+        setRmark("");
+      } else {
+        alert('超過10項囉!')
+      }
+    }else{
+      alert('請輸入名稱喔~')
     }
   }
   function deleteItem(id){
@@ -51,9 +59,12 @@ const Time = () => {
   } 
   function editItem(id,item){
     setIsOpen(true)
-    // setDialogNote(item.note)
-    // setDialogMark(item.mark)
+    editOrginalIndex.current = todoData.findIndex((element) => element.note==item.note&&element.mark==item.mark)
+    console.log(editOrginalIndex.current)
+    setDialogNote(item.note)
+    setDialogMark(item.mark)
   }
+  
 
   
 
@@ -151,16 +162,18 @@ const Time = () => {
 
         </div>
       </div>
+      
 
       {/* headlessui */}
-      <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="bg-gray-400 z-50 fixed top-0 left-0 w-full h-full">
+      <NoteEditDialog isOpen={isOpen} setIsOpen={setIsOpen} dialogNote={dialogNote} setDialogNote={setDialogNote} dialogMark={dialogMark} setDialogMark={setDialogMark} changeDialogNote={(e) => {setDialogNote(e.target.value);console.log(dialogNote)}}/>
+      {/* <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="z-50 fixed top-0 left-0 w-full h-full"  style={{ background: 'rgba(148,163,184,0.8)',}}>
       <Dialog.Panel>
           <div className="text-right">
-            {/* <button onClick={() => setIsOpen(false)}>Deactivate</button> */}
             <button onClick={() => setIsOpen(false)}>
               <XMarkIcon className="w-10 h-10"/>
             </button>
           </div>
+        <div class="flex justify-center align-center">
           <Dialog.Title>Deactivate account</Dialog.Title>
           <Dialog.Description>
             This will permanently deactivate your account
@@ -170,11 +183,12 @@ const Time = () => {
             Are you sure you want to deactivate your account? All of your data
             will be permanently removed. This action cannot be undone.
           </p>
+        </div>
 
       </Dialog.Panel>
-    </Dialog>
+    </Dialog> */}
     </div>
   );
 }
 
-export default Time
+export default Note
